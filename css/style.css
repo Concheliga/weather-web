@@ -37,6 +37,7 @@ body{
     padding: 0 10px;
     height: 100vh;
     gap: 20px;
+    transition: grid-template-rows .4s;
 }
 
 .app__container-top{
