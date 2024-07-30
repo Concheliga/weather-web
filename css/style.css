@@ -27,6 +27,7 @@ body{
     font-family: Arial, Verdana, sans-serif;
     background-color: rgb(7, 44, 84);
     color: var(--black-text);
+    transition: background-image 2s;
 }
 
 .app__container{
@@ -146,9 +147,9 @@ body{
     flex-direction: column;
     justify-content: space-between;
     padding: 20px;
-    /* opacity: 0;
+    opacity: 0;
     transition: opacity .4s, transform .4s;
-    transform: scale(0); */
+    transform: scale(0);
     height: 100%;
 }
 
@@ -224,7 +225,7 @@ body{
     transition: opacity .4s;
     will-change: opacity;
     overflow: hidden;
-    /* opacity: 0; */
+    opacity: 0;
 }
 
 .card-param-icon_footer{
@@ -279,10 +280,6 @@ body{
     width: 100%;
 }
 
-.card.glass .card-param__icon{
-    fill: white;
-}
-
 .card.glass .card__inner{
     opacity: 1;
     transform: scale(1);
@@ -301,6 +298,10 @@ body{
     width: 42px;
     height: 42px;
     filter: grayscale(1);
+}
+
+.card.glass .card-param__icon{
+    fill: white;
 }
 
 .card.glass:hover{
