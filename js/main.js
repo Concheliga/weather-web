@@ -2,13 +2,49 @@ const APIKey = 'a731b271190d4380843234127243007';
 const $cardsBox = document.getElementById('cards-box');
 const $locationForm = document.getElementById('location-form');
 const $locationInput = document.getElementById('location-form__input');
+const $body = document.body;
 let currentCard = null;
 
 async function getWeatherData(location){
-    const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`)
+    const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`);
     const data = await response.json();
-    console.log(data);
     return data;
+}
+
+function getBackground(isDay, condition){
+    const ligtRainConditions = ['Patchy rain possible', 'Patchy sleet possible', 'Patchy freezing drizzle possible', 'Patchy light drizzle', 'Light drizzle',
+    'Patchy light rain', 'Light rain', 'Light freezing rain', 'Light sleet', 'Light rain shower', 'Light sleet showers'];
+    const rainConditions = ['Heavy freezing drizzle', 'Freezing drizzle', 'Moderate rain at times', 'Moderate rain', 'Heavy rain at times', 'Heavy rain',
+    'Moderate or heavy freezing rain', 'Moderate or heavy sleet', 'Moderate or heavy rain shower', 'Torrential rain shower', 'Moderate or heavy sleet showers'];
+    const snowConditions = ['Blowing snow', 'Patchy snow possible', 'Blizzard', 'Patchy light snow', 'Light snow', 'Patchy moderate snow', 'Moderate snow',
+    'Patchy heavy snow', 'Heavy snow', 'Ice pellets', 'Light snow showers', 'Moderate or heavy snow showers', 'Light showers of ice pellets',
+    'Moderate or heavy showers of ice pellets'];
+    const fogConditions = ['Mist', 'Fog', 'Freezing fog'];
+    const thunderConditions = ['Patchy light rain with thunder', 'Thundery outbreaks possible', 'Moderate or heavy rain with thunder', 'Patchy light snow with thunder',
+    'Moderate or heavy snow with thunder']
+
+    if (isDay){
+        if (condition === 'Sunny') return 'url(img/bg/01d.jpeg)';
+        if (condition === 'Partly cloudy') return 'url(img/bg/02d.jpeg)';
+        if (condition === 'Cloudy') return 'url(img/bg/03d.jpeg)';
+        if (condition === 'Overcast') return 'url(img/bg/04d.jpeg)';
+        if (fogConditions.includes(condition)) return 'url(img/bg/15d.jpeg)';
+        if (ligtRainConditions.includes(condition)) return 'url(img/bg/09d.jpeg)';
+        if (thunderConditions.includes(condition)) return 'url(img/bg/11d.jpeg)';
+        if (snowConditions.includes(condition)) return 'url(img/bg/13d.jpeg)';
+        if (rainConditions.includes(condition)) return 'url(img/bg/10d.jpeg)';
+    }
+    else {
+        if (condition === 'Clear') return 'url(img/bg/01n.jpeg)';
+        if (condition === 'Partly cloudy') return 'url(img/bg/02n.jpeg)';
+        if (condition === 'Cloudy') return 'url(img/bg/03n.jpeg)';
+        if (condition === 'Overcast') return 'url(img/bg/04n.jpeg)';
+        if (fogConditions.includes(condition)) return 'url(img/bg/15n.jpeg)';
+        if (ligtRainConditions.includes(condition)) return 'url(img/bg/09n.jpeg)';
+        if (thunderConditions.includes(condition)) return 'url(img/bg/11n.jpeg)';
+        if (snowConditions.includes(condition)) return 'url(img/bg/13n.jpeg)';
+        if (rainConditions.includes(condition)) return 'url(img/bg/10n.jpeg)';
+    }
 }
 
 function getNewCard() {
@@ -93,7 +129,7 @@ function getNewCard() {
         $wind,
         $humidity,
         $icon
-    }
+    };
 }
 
 $locationForm.addEventListener('submit', (event)=>{
@@ -112,18 +148,11 @@ $locationForm.addEventListener('submit', (event)=>{
         newCard.$temp.textContent = data.current.temp_c;
         newCard.$wind.textContent = Math.round(data.current.wind_kph * 0.277778 * 10) / 10;
         newCard.$humidity.textContent = data.current.humidity;
-        console.log(newCard.$wind);
-        console.log(newCard.$icon);
-        console.log(newCard.$title);
-        console.log(newCard.$desc);
-        console.log(newCard.$temp);
-        console.log(newCard.$humidity);
-        console.log(data);
 
         setTimeout(()=>{
             document.querySelector('.app__container').classList.add('app__container_top');
-            // document.body.style.background = 'no-repeat, center';
-            // document.body.style.backgroundImage = `url(img/bg/${data.weather[0].icon}.jpeg)`;
+            $body.style.backgroundSize = '100%';
+            $body.style.backgroundImage = getBackground(data.current.is_day, data.current.condition.text);
             
             if (currentCard) currentCard.$card.classList.add('glass');
             
