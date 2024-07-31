@@ -1,19 +1,13 @@
-const APIKey = '9bd6a08ccd794bd9bbde301b5c768c26';
+const APIKey = 'a731b271190d4380843234127243007';
 const $cardsBox = document.getElementById('cards-box');
 const $locationForm = document.getElementById('location-form');
 const $locationInput = document.getElementById('location-form__input');
 let currentCard = null;
 
 async function getWeatherData(location){
-    // const request = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${APIKey}`);
-    // const latAndLon = await request.json();
-    // console.log(latAndLon);
-    // const lat = latAndLon[0].lat;
-    // const lon = latAndLon[0].lon;
-    // console.log(lat);
-    // console.log(lon);
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${APIKey}&units=metric`);
+    const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`)
     const data = await response.json();
+    console.log(data);
     return data;
 }
 
@@ -112,18 +106,24 @@ $locationForm.addEventListener('submit', (event)=>{
     setTimeout(async ()=>{
         newCard.$card.classList.add('loading');
         const data = await getWeatherData(location);
-        newCard.$icon.style.backgroundImage = `url(https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png)`;
-        newCard.$title.textContent = data.name;
-        newCard.$desc.textContent = data.weather[0].description;
-        newCard.$temp.textContent = data.main.temp;
-        newCard.$wind.textContent = data.wind.speed;
-        newCard.$humidity.textContent = data.main.humidity;
+        newCard.$icon.style.backgroundImage = `url(https:${data.current.condition.icon})`;
+        newCard.$title.textContent = data.location.name;
+        newCard.$desc.textContent = data.current.condition.text;
+        newCard.$temp.textContent = data.current.temp_c;
+        newCard.$wind.textContent = Math.round(data.current.wind_kph * 0.277778 * 10) / 10;
+        newCard.$humidity.textContent = data.current.humidity;
+        console.log(newCard.$wind);
+        console.log(newCard.$icon);
+        console.log(newCard.$title);
+        console.log(newCard.$desc);
+        console.log(newCard.$temp);
+        console.log(newCard.$humidity);
         console.log(data);
-        console.log(data.weather[0].icon)
 
         setTimeout(()=>{
             document.querySelector('.app__container').classList.add('app__container_top');
-            document.body.style.backgroundImage = `url(img/bg/${data.weather[0].icon}.jpeg)`
+            // document.body.style.background = 'no-repeat, center';
+            // document.body.style.backgroundImage = `url(img/bg/${data.weather[0].icon}.jpeg)`;
             
             if (currentCard) currentCard.$card.classList.add('glass');
             
