@@ -5,25 +5,44 @@ const $locationInput = document.getElementById('location-form__input');
 const $body = document.body;
 let currentCard = null;
 
-async function getWeatherData(location){
-    const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`);
-    const data = await response.json();
-    return data;
+async function getWeatherData(location) {
+    const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`)
+    .then((res)=>{
+        if (res.status < 200 || res.status >= 300){
+            throw new Error(res.statusText);
+        }
+        return res;
+    })
+    .catch((error) => {
+        if (error){
+            if (error.message === 'Bad Request') {
+                alert('Неверно введен город');
+            } else{
+                alert('Ошибка на стороне API');
+            }
+        }   
+        return null;
+    });
+    if (response){
+        const data = await response.json();
+        return data;
+    }
+    return null;
 }
 
-function getBackground(isDay, condition){
+function getBackground(isDay, condition) {
     const ligtRainConditions = ['Patchy rain possible', 'Patchy sleet possible', 'Patchy freezing drizzle possible', 'Patchy light drizzle', 'Light drizzle',
-    'Patchy light rain', 'Light rain', 'Light freezing rain', 'Light sleet', 'Light rain shower', 'Light sleet showers'];
+        'Patchy light rain', 'Light rain', 'Light freezing rain', 'Light sleet', 'Light rain shower', 'Light sleet showers'];
     const rainConditions = ['Heavy freezing drizzle', 'Freezing drizzle', 'Moderate rain at times', 'Moderate rain', 'Heavy rain at times', 'Heavy rain',
-    'Moderate or heavy freezing rain', 'Moderate or heavy sleet', 'Moderate or heavy rain shower', 'Torrential rain shower', 'Moderate or heavy sleet showers'];
+        'Moderate or heavy freezing rain', 'Moderate or heavy sleet', 'Moderate or heavy rain shower', 'Torrential rain shower', 'Moderate or heavy sleet showers'];
     const snowConditions = ['Blowing snow', 'Patchy snow possible', 'Blizzard', 'Patchy light snow', 'Light snow', 'Patchy moderate snow', 'Moderate snow',
-    'Patchy heavy snow', 'Heavy snow', 'Ice pellets', 'Light snow showers', 'Moderate or heavy snow showers', 'Light showers of ice pellets',
-    'Moderate or heavy showers of ice pellets'];
+        'Patchy heavy snow', 'Heavy snow', 'Ice pellets', 'Light snow showers', 'Moderate or heavy snow showers', 'Light showers of ice pellets',
+        'Moderate or heavy showers of ice pellets'];
     const fogConditions = ['Mist', 'Fog', 'Freezing fog'];
     const thunderConditions = ['Patchy light rain with thunder', 'Thundery outbreaks possible', 'Moderate or heavy rain with thunder', 'Patchy light snow with thunder',
-    'Moderate or heavy snow with thunder']
+        'Moderate or heavy snow with thunder']
 
-    if (isDay){
+    if (isDay) {
         if (condition === 'Sunny') return 'url(img/bg/01d.jpeg)';
         if (condition === 'Partly cloudy') return 'url(img/bg/02d.jpeg)';
         if (condition === 'Cloudy') return 'url(img/bg/03d.jpeg)';
@@ -121,7 +140,7 @@ function getNewCard() {
     $card.querySelector('.first').prepend($wind);
     $card.querySelector('.second').prepend($humidity);
 
-    return{
+    return {
         $card,
         $title,
         $temp,
@@ -132,16 +151,17 @@ function getNewCard() {
     };
 }
 
-$locationForm.addEventListener('submit', (event)=>{
+$locationForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const newCard = getNewCard();
     const location = $locationInput.value.trim();
     $locationInput.value = '';
     $cardsBox.prepend(newCard.$card);
 
-    setTimeout(async ()=>{
-        newCard.$card.classList.add('loading');
+    setTimeout(async () => {
+        newCard.$card.classList.add('loading');      
         const data = await getWeatherData(location);
+        if (!data) newCard.$card.remove();
         newCard.$icon.style.backgroundImage = `url(https:${data.current.condition.icon})`;
         newCard.$title.textContent = data.location.name;
         newCard.$desc.textContent = data.current.condition.text;
@@ -149,13 +169,13 @@ $locationForm.addEventListener('submit', (event)=>{
         newCard.$wind.textContent = Math.round(data.current.wind_kph * 0.277778 * 10) / 10;
         newCard.$humidity.textContent = data.current.humidity;
 
-        setTimeout(()=>{
+        setTimeout(() => {
             document.querySelector('.app__container').classList.add('app__container_top');
-            $body.style.backgroundSize = '100%';
+            $body.style.backgroundSize = 'cover';
             $body.style.backgroundImage = getBackground(data.current.is_day, data.current.condition.text);
-            
+
             if (currentCard) currentCard.$card.classList.add('glass');
-            
+
             currentCard = newCard
             newCard.$card.classList.remove('loading');
             newCard.$card.classList.add('full');
