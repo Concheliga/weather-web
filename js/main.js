@@ -6,7 +6,7 @@ const $body = document.body;
 let currentCard = null;
 
 async function getWeatherData(location) {
-    const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`)
+    const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`)
     .then((res)=>{
         if (res.status < 200 || res.status >= 300){
             throw new Error(res.statusText);
