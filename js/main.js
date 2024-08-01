@@ -3,27 +3,20 @@ const $cardsBox = document.getElementById('cards-box');
 const $locationForm = document.getElementById('location-form');
 const $locationInput = document.getElementById('location-form__input');
 const $body = document.body;
-let currentCard = null;
 
 async function getWeatherData(location) {
     const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=${APIKey}&q=${location}`)
-    .then((res)=>{
-        if (res.status < 200 || res.status >= 300){
-            throw new Error(res.statusText);
-        }
-        return res;
-    })
-    .catch((error) => {
-        if (error){
-            if (error.message === 'Bad Request') {
-                alert('Неверно введен город');
-            } else{
-                alert('Ошибка на стороне API');
+        .then((res) => {
+            if (res.status < 200 || res.status >= 300) {
+                throw new Error(res.statusText);
             }
-        }   
-        return null;
-    });
-    if (response){
+            return res;
+        })
+        .catch((error) => {
+            alert('Неверно введен город');
+            return null;
+        });
+    if (response) {
         const data = await response.json();
         return data;
     }
@@ -40,11 +33,11 @@ function getBackground(isDay, condition) {
         'Moderate or heavy showers of ice pellets'];
     const fogConditions = ['Mist', 'Fog', 'Freezing fog'];
     const thunderConditions = ['Patchy light rain with thunder', 'Thundery outbreaks possible', 'Moderate or heavy rain with thunder', 'Patchy light snow with thunder',
-        'Moderate or heavy snow with thunder']
+        'Moderate or heavy snow with thunder'];
 
     if (isDay) {
         if (condition === 'Sunny') return 'url(img/bg/01d.jpeg)';
-        if (condition === 'Partly cloudy') return 'url(img/bg/02d.jpeg)';
+        if (condition === 'Partly Cloudy') return 'url(img/bg/02d.jpeg)';
         if (condition === 'Cloudy') return 'url(img/bg/03d.jpeg)';
         if (condition === 'Overcast') return 'url(img/bg/04d.jpeg)';
         if (fogConditions.includes(condition)) return 'url(img/bg/15d.jpeg)';
@@ -55,7 +48,7 @@ function getBackground(isDay, condition) {
     }
     else {
         if (condition === 'Clear') return 'url(img/bg/01n.jpeg)';
-        if (condition === 'Partly cloudy') return 'url(img/bg/02n.jpeg)';
+        if (condition === 'Partly Cloudy') return 'url(img/bg/02n.jpeg)';
         if (condition === 'Cloudy') return 'url(img/bg/03n.jpeg)';
         if (condition === 'Overcast') return 'url(img/bg/04n.jpeg)';
         if (fogConditions.includes(condition)) return 'url(img/bg/15n.jpeg)';
@@ -66,12 +59,15 @@ function getBackground(isDay, condition) {
     }
 }
 
-function onGlassCardClick(){
+function onGlassCardClick() {
     const fullCard = document.querySelector('.current');
-    fullCard.classList.remove('current');
-    fullCard.classList.add('glass');
+    if (fullCard){
+        fullCard.classList.remove('current');
+        fullCard.classList.add('glass');
+    }
     this.classList.remove('glass');
     this.classList.add('current');
+    $body.style.backgroundImage = this.id;
 }
 
 function getNewCard() {
@@ -123,6 +119,16 @@ function getNewCard() {
                             м/с
                         </span>
                     </div>
+                    <div class="card__footer-center card-param">
+                        <svg class="card-param__icon card-param-icon_footer" viewBox="0 0 64 64">
+                            <path d="M22.6066 21.3934C22.2161 21.0029 21.5829 21.0029 21.1924 21.3934C20.8019 21.7839 20.8019 22.4171 21.1924 22.8076L22.6066 
+                            21.3934ZM40.9914 42.6066C41.3819 42.9971 42.0151 42.9971 42.4056 42.6066C42.7961 42.2161 42.7961 41.5829 42.4056 41.1924L40.9914 
+                            42.6066ZM21.1924 41.1924C20.8019 41.5829 20.8019 42.2161 21.1924 42.6066C21.5829 42.9971 22.2161 42.9971 22.6066 42.6066L21.1924 
+                            41.1924ZM42.4056 22.8076C42.7961 22.4171 42.7961 21.7839 42.4056 21.3934C42.0151 21.0029 41.3819 21.0029 40.9914 21.3934L42.4056 
+                            22.8076ZM21.1924 22.8076L40.9914 42.6066L42.4056 41.1924L22.6066 21.3934L21.1924 22.8076ZM22.6066 42.6066L42.4056 22.8076L40.9914 
+                            21.3934L21.1924 41.1924L22.6066 42.6066Z"/>
+                        </svg>                    
+                    </div>
                     <div class="card__footer-right card-param">
                         <svg class="card-param__icon card-param-icon_footer" viewBox="0 0 800 800">
                             <path
@@ -159,7 +165,13 @@ function getNewCard() {
     };
 }
 
-$locationForm.addEventListener('submit', (event) => {
+function onXClick() {
+    const currentCard = this.parentNode.parentNode.parentNode.parentNode;
+    currentCard.removeEventListener('click', onGlassCardClick);
+    currentCard.remove();
+}
+
+function onFormSubmit(event) {
     event.preventDefault();
     const newCard = getNewCard();
     const location = $locationInput.value.trim();
@@ -167,36 +179,40 @@ $locationForm.addEventListener('submit', (event) => {
     $cardsBox.prepend(newCard.$card);
 
     setTimeout(async () => {
-        newCard.$card.classList.add('loading');      
+        newCard.$card.classList.add('loading');
         const data = await getWeatherData(location);
+        const openCard = document.querySelector('.current');
 
         if (!data) {
             newCard.$card.remove();
             return;
         }
-        
+
         newCard.$icon.style.backgroundImage = `url(https:${data.current.condition.icon})`;
         newCard.$title.textContent = data.location.name;
         newCard.$desc.textContent = data.current.condition.text;
         newCard.$temp.textContent = data.current.temp_c;
         newCard.$wind.textContent = Math.round(data.current.wind_kph * 0.277778 * 10) / 10;
         newCard.$humidity.textContent = data.current.humidity;
+        newCard.$card.id = getBackground(data.current.is_day, data.current.condition.text);
 
         setTimeout(() => {
             document.querySelector('.app__container').classList.add('app__container_top');
             $body.style.backgroundSize = 'cover';
-            $body.style.backgroundImage = getBackground(data.current.is_day, data.current.condition.text);
+            $body.style.backgroundImage = newCard.$card.id;
 
-            if (currentCard) {
-                currentCard.$card.classList.add('glass');
-                currentCard.$card.classList.remove('current');
+            if (openCard) {
+                openCard.classList.add('glass');
+                openCard.classList.remove('current');
             }
 
-            currentCard = newCard
             newCard.$card.classList.remove('loading');
             newCard.$card.classList.add('full');
             newCard.$card.classList.add('current');
+            newCard.$card.querySelector('.card__footer-center').querySelector('.card-param__icon').addEventListener('click', onXClick);
             newCard.$card.addEventListener('click', onGlassCardClick);
         }, 600)
     }, 30)
-})
+}
+
+$locationForm.addEventListener('submit', onFormSubmit)
