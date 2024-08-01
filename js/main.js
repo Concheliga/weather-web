@@ -66,6 +66,14 @@ function getBackground(isDay, condition) {
     }
 }
 
+function onGlassCardClick(){
+    const fullCard = document.querySelector('.current');
+    fullCard.classList.remove('current');
+    fullCard.classList.add('glass');
+    this.classList.remove('glass');
+    this.classList.add('current');
+}
+
 function getNewCard() {
     const $card = document.createElement('div');
     const $icon = document.createElement('div');
@@ -161,7 +169,12 @@ $locationForm.addEventListener('submit', (event) => {
     setTimeout(async () => {
         newCard.$card.classList.add('loading');      
         const data = await getWeatherData(location);
-        if (!data) newCard.$card.remove();
+
+        if (!data) {
+            newCard.$card.remove();
+            return;
+        }
+        
         newCard.$icon.style.backgroundImage = `url(https:${data.current.condition.icon})`;
         newCard.$title.textContent = data.location.name;
         newCard.$desc.textContent = data.current.condition.text;
@@ -174,11 +187,16 @@ $locationForm.addEventListener('submit', (event) => {
             $body.style.backgroundSize = 'cover';
             $body.style.backgroundImage = getBackground(data.current.is_day, data.current.condition.text);
 
-            if (currentCard) currentCard.$card.classList.add('glass');
+            if (currentCard) {
+                currentCard.$card.classList.add('glass');
+                currentCard.$card.classList.remove('current');
+            }
 
             currentCard = newCard
             newCard.$card.classList.remove('loading');
             newCard.$card.classList.add('full');
+            newCard.$card.classList.add('current');
+            newCard.$card.addEventListener('click', onGlassCardClick);
         }, 600)
     }, 30)
 })
